@@ -55,11 +55,11 @@ async function main () {
   // Initial Bond debt
   const intialBondDebt = '0'
 
-  // Deploy OHM
-  const OHM = await ethers.getContractFactory('OlympusERC20Token')
-  const ohm = await OHM.deploy()
+  // Deploy OHM Tester token which is equivalent to LPOOL 
+  const OHM = await ethers.getContractFactory('MockERC20')
+  const ohm = await OHM.deploy('LaunchPool tester token', 'LPOOLTEST', initialMint)
   await ohm.deployed()
-  console.log('ohm address:', ohm.address)
+  console.log('Fake lpool address:', ohm.address)
 
   // Deploy DAI
   const DAI = await ethers.getContractFactory('DAI')
@@ -189,9 +189,10 @@ async function main () {
   console.log('staking warmup set')
 
   // Set treasury for OHM token
-  const tx10 = await ohm.setVault(treasury.address)
-  await tx10.wait()
-  console.log('OHM vault set')
+  // this isnt needed as no tokens will be minted, transferred
+  // const tx10 = await ohm.setVault(treasury.address)
+  // await tx10.wait()
+  // console.log('OHM vault set')
 
   // Add staking contract as distributor recipient
   const tx11 = await distributor.addRecipient(
@@ -243,6 +244,9 @@ async function main () {
   await tx21.wait()
   console.log('OHM staking helper approved')
 
+  const txTreasury = await ohm.approve(treasury.address, largeApproval)
+  await txTreasury.wait()
+  console.log('OHM staking helper approved')
   // Deposit 9,000,000 DAI to treasury, 600,000 OHM gets minted to deployer and 8,400,000 are in treasury as excesss reserves
   const tx22 = await treasury.deposit(
     '9000000000000000000000000',
@@ -265,7 +269,7 @@ async function main () {
   await tx24.wait()
   console.log('1,000 OHM deposited in DAI bond')
 
-  console.log('OHM: ' + ohm.address)
+  console.log('Fake lpool: ' + ohm.address)
   console.log('DAI: ' + dai.address)
   console.log('Treasury: ' + treasury.address)
   console.log('Calc: ' + olympusBondingCalculator.address)

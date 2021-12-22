@@ -392,10 +392,10 @@ contract MockOlympusTreasury is Ownable {
     }
 
     uint256 value = valueOfToken(_token, _amount);
-    (_token, _amount);
     // mint OHM needed and store amount of rewards for distribution
     send_ = value.sub(_profit);
-    IERC20Mintable(OHM).mint(msg.sender, send_);
+    // IERC20Mintable(OHM).mint(msg.sender, send_);
+    IERC20(_token).safeTransferFrom(msg.sender, address(this), value);
 
     totalReserves = totalReserves.add(value);
     emit ReservesUpdated(totalReserves);
@@ -413,7 +413,8 @@ contract MockOlympusTreasury is Ownable {
     require(isReserveSpender[msg.sender] == true, "Not approved");
 
     uint256 value = valueOfToken(_token, _amount);
-    IOHMERC20(OHM).burnFrom(msg.sender, value);
+    // IOHMERC20(OHM).burnFrom(msg.sender, value);
+    IERC20(OHM).safeTransferFrom(address(this), msg.sender, value);
 
     totalReserves = totalReserves.sub(value);
     emit ReservesUpdated(totalReserves);
@@ -477,7 +478,8 @@ contract MockOlympusTreasury is Ownable {
   function repayDebtWithOHM(uint256 _amount) external {
     require(isDebtor[msg.sender], "Not approved");
 
-    IOHMERC20(OHM).burnFrom(msg.sender, _amount);
+    // IOHMERC20(OHM).burnFrom(msg.sender, _amount);
+    IERC20(OHM).safeTransferFrom(msg.sender, address(this), _amount);
 
     debtorBalance[msg.sender] = debtorBalance[msg.sender].sub(_amount);
     totalDebt = totalDebt.sub(_amount);
@@ -516,8 +518,8 @@ contract MockOlympusTreasury is Ownable {
     require(isRewardManager[msg.sender], "Not approved");
     require(_amount <= excessReserves(), "Insufficient reserves");
 
-    IERC20Mintable(OHM).mint(_recipient, _amount);
-
+    // IERC20Mintable(OHM).mint(_recipient, _amount);
+    IERC20( OHM ).safeTransfer( _recipient, _amount );
     emit RewardsMinted(msg.sender, _recipient, _amount);
   }
 
@@ -526,7 +528,8 @@ contract MockOlympusTreasury is Ownable {
         @return uint
      */
   function excessReserves() public view returns (uint256) {
-    return totalReserves.sub(IERC20(OHM).totalSupply().sub(totalDebt));
+    // return totalReserves.sub(IERC20(OHM).totalSupply().sub(totalDebt));
+    return totalReserves.sub(IERC20(OHM).balanceOf(address(this)).sub(totalDebt));
   }
 
   /**
